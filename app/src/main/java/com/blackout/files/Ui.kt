@@ -91,7 +91,7 @@ class UiState(val prefs: Prefs) {
     var showHidden by mutableStateOf(prefs.showHidden)
     var trashDays by mutableIntStateOf(prefs.trashDays)
     var favs by mutableStateOf(prefs.favorites())
-    var clip by mutableStateOf<File?>(null)
+    var clip by mutableStateOf<List<File>>(emptyList())
     var clipMove by mutableStateOf(false)
     var iconBack by mutableIntStateOf(prefs.iconBack)
     var iconFront by mutableIntStateOf(prefs.iconFront)
@@ -274,6 +274,8 @@ fun FileRow(
     onClick: () -> Unit,
     onLong: (() -> Unit)? = null,
     title: String = f.name,
+    selected: Boolean = false,
+    interactive: Boolean = true,
     trailing: @Composable () -> Unit = {}
 ) {
     val t = FileOps.typeOf(f)
@@ -281,7 +283,8 @@ fun FileRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLong)
+            .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+            .then(if (interactive) Modifier.combinedClickable(onClick = onClick, onLongClick = onLong) else Modifier)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -367,182 +370,6 @@ fun StorageCard(st: UiState, total: Long, free: Long, cats: Map<FileType, Long>)
             }
             Box(Modifier.weight(rest.toFloat()).fillMaxHeight())
         }
-    }
-}
-
-@Composable
-fun BrowseScreen(
-    st: UiState,
-    dir: String,
-    setDir: (String) -> Unit,
-    onOpen: (File) -> Unit,
-    onShare: (File) -> Unit
-) {
-    var refresh by remember { mutableIntStateOf(0) }
-    var searching by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var menuFor by remember { mutableStateOf<File?>(null) }
-    var renameFor by remember { mutableStateOf<File?>(null) }
-    var newFolder by remember { mutableStateOf(false) }
-    var cats by remember { mutableStateOf<Map<FileType, Long>>(emptyMap()) }
-    val root = FileOps.root.path
-    val ctx = LocalContext.current
-
-    BackHandler(enabled = dir != root) { setDir(File(dir).parent ?: root) }
-
-    LaunchedEffect(refresh) {
-        cats = withContext(Dispatchers.IO) { FileOps.scan() }
-    }
-
-    val all = remember(dir, st.showHidden, refresh) { FileOps.list(File(dir), st.showHidden) }
-    val shown = if (query.isBlank()) all else all.filter { it.name.contains(query, ignoreCase = true) }
-    val storage = remember(refresh) { FileOps.storage() }
-
-    Column(Modifier.fillMaxSize()) {
-        Header("Browse") {
-            IconButton(onClick = {
-                searching = !searching
-                if (!searching) query = ""
-            }) { Icon(Icons.Filled.Search, contentDescription = "Search") }
-            IconButton(onClick = { newFolder = true }) {
-                Icon(Icons.Filled.CreateNewFolder, contentDescription = "New folder")
-            }
-        }
-        if (searching) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                singleLine = true,
-                placeholder = { Text("Search this folder") },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            )
-        }
-        st.clip?.let { c ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .padding(start = 12.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    (if (st.clipMove) "Moving " else "Copying ") + c.name,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                TextButton(onClick = {
-                    val r = FileOps.paste(c, File(dir), st.clipMove)
-                    if (r != null) {
-                        if (st.clipMove) st.renameFav(c.path, r.path)
-                        st.clip = null
-                        refresh++
-                    } else {
-                        Toast.makeText(ctx, "Couldn't paste here", Toast.LENGTH_SHORT).show()
-                    }
-                }) { Text("Paste here") }
-                TextButton(onClick = { st.clip = null }) { Text("Cancel") }
-            }
-        }
-        StorageCard(st, storage.first, storage.second, cats)
-        Text(
-            "Internal" + dir.removePrefix(root).replace("/", "  /  "),
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
-        if (shown.isEmpty()) {
-            Text(
-                "This folder is empty.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(16.dp)
-            )
-        } else {
-            LazyColumn(Modifier.fillMaxSize()) {
-                items(shown, key = { it.path }) { f ->
-                    val fav = f.path in st.favs
-                    Box {
-                        FileRow(
-                            st = st,
-                            f = f,
-                            sub = rowSub(f),
-                            fav = fav,
-                            onClick = {
-                                if (f.isDirectory) {
-                                    query = ""
-                                    searching = false
-                                    setDir(f.path)
-                                } else {
-                                    onOpen(f)
-                                }
-                            },
-                            onLong = { menuFor = f }
-                        )
-                        DropdownMenu(expanded = menuFor == f, onDismissRequest = { menuFor = null }) {
-                            DropdownMenuItem(
-                                text = { Text(if (fav) "Remove favorite" else "Add to favorites") },
-                                onClick = { st.toggleFav(f); menuFor = null }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Rename") },
-                                onClick = { renameFor = f; menuFor = null }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Copy to…") },
-                                onClick = { st.clip = f; st.clipMove = false; menuFor = null }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Move to…") },
-                                onClick = { st.clip = f; st.clipMove = true; menuFor = null }
-                            )
-                            if (f.isFile) {
-                                DropdownMenuItem(
-                                    text = { Text("Share") },
-                                    onClick = { onShare(f); menuFor = null }
-                                )
-                            }
-                            DropdownMenuItem(
-                                text = { Text("Move to trash") },
-                                onClick = {
-                                    FileOps.toTrash(st.prefs, f)
-                                    menuFor = null
-                                    refresh++
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    renameFor?.let { f ->
-        NameDialog(
-            title = "Rename",
-            initial = f.name,
-            onOk = { n ->
-                val moved = FileOps.rename(f, n)
-                if (moved != null) st.renameFav(f.path, moved.path)
-                renameFor = null
-                refresh++
-            },
-            onDismiss = { renameFor = null }
-        )
-    }
-    if (newFolder) {
-        NameDialog(
-            title = "New folder",
-            initial = "",
-            onOk = { n ->
-                File(dir, n).mkdirs()
-                newFolder = false
-                refresh++
-            },
-            onDismiss = { newFolder = false }
-        )
     }
 }
 

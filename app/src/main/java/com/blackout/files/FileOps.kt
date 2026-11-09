@@ -104,7 +104,7 @@ object FileOps {
         return if (f.renameTo(dest)) dest else null
     }
 
-    private fun uniqueDest(dir: File, name: String): File {
+    fun uniqueDest(dir: File, name: String): File {
         var d = File(dir, name)
         if (!d.exists()) return d
         val base = File(name).nameWithoutExtension
