@@ -24,7 +24,7 @@ android {
             if (keystorePath != null) {
                 storeFile = file(keystorePath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
+                keyAlias = System.getenv("KEY_ALIAS")?.trim()?.takeIf { it.isNotEmpty() } ?: "communications"
                 keyPassword = System.getenv("KEYSTORE_PASSWORD")
             }
         }
