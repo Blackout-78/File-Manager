@@ -104,6 +104,41 @@ object FileOps {
         return if (f.renameTo(dest)) dest else null
     }
 
+    private fun uniqueDest(dir: File, name: String): File {
+        var d = File(dir, name)
+        if (!d.exists()) return d
+        val base = File(name).nameWithoutExtension
+        val ext = File(name).extension.let { if (it.isEmpty()) "" else ".$it" }
+        var i = 1
+        while (d.exists()) {
+            d = File(dir, "$base ($i)$ext")
+            i++
+        }
+        return d
+    }
+
+    fun paste(src: File, destDir: File, move: Boolean): File? {
+        if (!src.exists() || !destDir.isDirectory) return null
+        if (src.isDirectory && (destDir.path == src.path || destDir.path.startsWith(src.path + "/"))) return null
+        if (move && src.parentFile == destDir) return src
+        val dest = uniqueDest(destDir, src.name)
+        return try {
+            if (move) {
+                if (!src.renameTo(dest)) {
+                    if (!src.copyRecursively(dest, overwrite = false)) return null
+                    src.deleteRecursively()
+                }
+                dest
+            } else if (src.copyRecursively(dest, overwrite = false)) {
+                dest
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun trashFile(item: TrashItem): File = File(trashDir, item.trashName)
 
     fun toTrash(prefs: Prefs, f: File): Boolean {

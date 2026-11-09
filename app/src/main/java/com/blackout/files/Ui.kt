@@ -3,6 +3,7 @@ package com.blackout.files
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -76,6 +77,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,6 +91,8 @@ class UiState(val prefs: Prefs) {
     var showHidden by mutableStateOf(prefs.showHidden)
     var trashDays by mutableIntStateOf(prefs.trashDays)
     var favs by mutableStateOf(prefs.favorites())
+    var clip by mutableStateOf<File?>(null)
+    var clipMove by mutableStateOf(false)
     val colors = mutableStateMapOf<FileType, Int>().also { m ->
         FileType.values().forEach { m[it] = prefs.typeColor(it) }
     }
@@ -373,6 +377,7 @@ fun BrowseScreen(
     var newFolder by remember { mutableStateOf(false) }
     var cats by remember { mutableStateOf<Map<FileType, Long>>(emptyMap()) }
     val root = FileOps.root.path
+    val ctx = LocalContext.current
 
     BackHandler(enabled = dir != root) { setDir(File(dir).parent ?: root) }
 
@@ -402,6 +407,36 @@ fun BrowseScreen(
                 placeholder = { Text("Search this folder") },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             )
+        }
+        st.clip?.let { c ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .padding(start = 12.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    (if (st.clipMove) "Moving " else "Copying ") + c.name,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = {
+                    val r = FileOps.paste(c, File(dir), st.clipMove)
+                    if (r != null) {
+                        if (st.clipMove) st.renameFav(c.path, r.path)
+                        st.clip = null
+                        refresh++
+                    } else {
+                        Toast.makeText(ctx, "Couldn't paste here", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Paste here") }
+                TextButton(onClick = { st.clip = null }) { Text("Cancel") }
+            }
         }
         StorageCard(st, storage.first, storage.second, cats)
         Text(
@@ -445,6 +480,14 @@ fun BrowseScreen(
                             DropdownMenuItem(
                                 text = { Text("Rename") },
                                 onClick = { renameFor = f; menuFor = null }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Copy to…") },
+                                onClick = { st.clip = f; st.clipMove = false; menuFor = null }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Move to…") },
+                                onClick = { st.clip = f; st.clipMove = true; menuFor = null }
                             )
                             if (f.isFile) {
                                 DropdownMenuItem(
@@ -597,6 +640,8 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
         0xFFF5B93A, 0xFFEC6FA0, 0xFF9B8CF0, 0xFF3FCB9B, 0xFF5AA9F0,
         0xFFEF5B5B, 0xFFF08A5D, 0xFF7BC74D, 0xFF9AA0B2
     ).map { it.toInt() }
+    val ctx = LocalContext.current
+    var chosenIcon by remember { mutableStateOf(AppIcons.current(ctx)) }
 
     LazyColumn(Modifier.fillMaxSize()) {
         item { Header("Settings") }
@@ -610,6 +655,47 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
                 valueRange = 0f..360f,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
+        }
+
+        item { SectionLabel("App icon") }
+        item {
+            Row(
+                Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AppIcons.options.forEach { opt ->
+                    val sel = chosenIcon == opt.alias
+                    Column(
+                        Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .clickable {
+                                AppIcons.set(ctx, opt.alias)
+                                chosenIcon = opt.alias
+                                Toast.makeText(
+                                    ctx,
+                                    "Icon changed. Your launcher may take a few seconds to update.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            .then(
+                                if (sel) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(14.dp))
+                                else Modifier
+                            )
+                            .padding(6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(Modifier.size(60.dp).clip(RoundedCornerShape(16.dp)).background(Color(opt.bg))) {
+                            Image(
+                                painterResource(opt.fg),
+                                contentDescription = opt.label,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(opt.label, fontSize = 11.sp)
+                    }
+                }
+            }
         }
 
         item { SectionLabel("File type icon colors") }
