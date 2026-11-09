@@ -157,15 +157,15 @@ fun nightScheme(hue: Float) = darkColorScheme(
 )
 
 fun iconFor(t: FileType): ImageVector = when (t) {
-    FileType.FOLDER -> OFolder
-    FileType.IMAGE -> OImage
-    FileType.VIDEO -> OMovie
-    FileType.AUDIO -> OMusicNote
-    FileType.PDF -> OPictureAsPdf
-    FileType.DOC -> ODescription
-    FileType.ARCHIVE -> OFolderZip
-    FileType.APK -> OAndroid
-    FileType.OTHER -> OInsertDriveFile
+    FileType.FOLDER -> Icons.Outlined.OFolder
+    FileType.IMAGE -> Icons.Outlined.OImage
+    FileType.VIDEO -> Icons.Outlined.OMovie
+    FileType.AUDIO -> Icons.Outlined.OMusicNote
+    FileType.PDF -> Icons.Outlined.OPictureAsPdf
+    FileType.DOC -> Icons.Outlined.ODescription
+    FileType.ARCHIVE -> Icons.Outlined.OFolderZip
+    FileType.APK -> Icons.Outlined.OAndroid
+    FileType.OTHER -> Icons.Outlined.OInsertDriveFile
 }
 
 fun rowSub(f: File): String =
