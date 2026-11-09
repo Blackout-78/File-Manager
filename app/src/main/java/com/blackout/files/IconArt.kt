@@ -4,66 +4,75 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.IconCompat
 
 object IconArt {
-    val BG = 0xFF1C1C1F.toInt()
-    val DEF_BACK = 0xFFB8B8BE.toInt()
-    val DEF_FRONT = 0xFFFFFFFF.toInt()
-    val DEF_KEY = 0xFF1C1C1F.toInt()
+    val DEF_BG = 0xFF1C1C1F.toInt()
+    val DEF_FG = 0xFFFFFFFF.toInt()
 
-    private fun backPath(): Path = Path().apply {
-        moveTo(24f, 32f); lineTo(46f, 32f); lineTo(52f, 39f); lineTo(84f, 39f)
-        quadTo(86f, 39f, 86f, 41f); lineTo(86f, 76f)
-        quadTo(86f, 78f, 84f, 78f); lineTo(26f, 78f)
-        quadTo(24f, 78f, 24f, 76f); close()
+    val STYLES = listOf("Classic", "Ring", "Solid")
+
+    private fun folder(): Path = Path().apply {
+        moveTo(30f, 38f); lineTo(47f, 38f); lineTo(52f, 45f); lineTo(78f, 45f)
+        lineTo(78f, 72f); lineTo(30f, 72f); close()
     }
 
-    private fun frontPath(): Path = Path().apply {
-        moveTo(24f, 50f); lineTo(86f, 50f); lineTo(86f, 76f)
-        quadTo(86f, 78f, 84f, 78f); lineTo(26f, 78f)
-        quadTo(24f, 78f, 24f, 76f); close()
-    }
-
-    private fun stemPath(): Path = Path().apply {
-        moveTo(52.6f, 63.5f); lineTo(57.4f, 63.5f); lineTo(59f, 72f); lineTo(51f, 72f); close()
-    }
-
-    fun render(size: Int, back: Int, front: Int, key: Int, rounded: Boolean): Bitmap {
+    fun render(size: Int, style: Int, bg: Int, fg: Int, rounded: Boolean): Bitmap {
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val s = size / 108f
         c.scale(s, s)
         val p = Paint(Paint.ANTI_ALIAS_FLAG)
+        p.strokeJoin = Paint.Join.ROUND
         p.style = Paint.Style.FILL
-        p.color = BG
+        p.color = bg
         if (rounded) {
             c.drawRoundRect(RectF(0f, 0f, 108f, 108f), 26f, 26f, p)
         } else {
             c.drawRect(0f, 0f, 108f, 108f, p)
         }
-        p.color = back
-        c.drawPath(backPath(), p)
-        p.color = front
-        c.drawPath(frontPath(), p)
-        p.color = ColorUtils.blendARGB(front, Color.WHITE, 0.35f)
-        c.drawRect(24f, 49f, 86f, 51.5f, p)
-        p.color = key
-        c.drawCircle(55f, 61f, 5f, p)
-        c.drawPath(stemPath(), p)
+        p.color = fg
+        when (style) {
+            1 -> {
+                p.style = Paint.Style.STROKE
+                p.strokeWidth = 2.4f
+                c.drawCircle(54f, 54f, 31.5f, p)
+                p.strokeWidth = 3.5f
+                c.drawPath(folder(), p)
+                p.strokeWidth = 3f
+                c.drawCircle(54f, 58.5f, 8f, p)
+                p.style = Paint.Style.FILL
+                c.drawCircle(54f, 58.5f, 2.5f, p)
+            }
+            2 -> {
+                p.style = Paint.Style.FILL_AND_STROKE
+                p.strokeWidth = 3f
+                c.drawPath(folder(), p)
+                p.style = Paint.Style.FILL
+                p.color = bg
+                c.drawCircle(54f, 58.5f, 4.5f, p)
+            }
+            else -> {
+                p.style = Paint.Style.STROKE
+                p.strokeWidth = 5f
+                c.drawPath(folder(), p)
+                p.strokeWidth = 4f
+                c.drawCircle(54f, 58.5f, 9f, p)
+                p.style = Paint.Style.FILL
+                c.drawCircle(54f, 58.5f, 3f, p)
+            }
+        }
         return bmp
     }
 
-    fun pin(ctx: Context, back: Int, front: Int, key: Int): Boolean {
+    fun pin(ctx: Context, style: Int, bg: Int, fg: Int): Boolean {
         if (!ShortcutManagerCompat.isRequestPinShortcutSupported(ctx)) return false
-        val bmp = render(432, back, front, key, false)
+        val bmp = render(432, style, bg, fg, false)
         val info = ShortcutInfoCompat.Builder(ctx, "file_manager_custom")
             .setShortLabel("File Manager")
             .setIcon(IconCompat.createWithAdaptiveBitmap(bmp))

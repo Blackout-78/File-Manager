@@ -44,6 +44,15 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Folder as OFolder
+import androidx.compose.material.icons.outlined.Image as OImage
+import androidx.compose.material.icons.outlined.Movie as OMovie
+import androidx.compose.material.icons.outlined.MusicNote as OMusicNote
+import androidx.compose.material.icons.outlined.PictureAsPdf as OPictureAsPdf
+import androidx.compose.material.icons.outlined.Description as ODescription
+import androidx.compose.material.icons.outlined.FolderZip as OFolderZip
+import androidx.compose.material.icons.outlined.Android as OAndroid
+import androidx.compose.material.icons.outlined.InsertDriveFile as OInsertDriveFile
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -94,14 +103,14 @@ class UiState(val prefs: Prefs) {
     var favs by mutableStateOf(prefs.favorites())
     var clip by mutableStateOf<List<File>>(emptyList())
     var clipMove by mutableStateOf(false)
-    var iconBack by mutableIntStateOf(prefs.iconBack)
-    var iconFront by mutableIntStateOf(prefs.iconFront)
-    var iconKey by mutableIntStateOf(prefs.iconKey)
+    var iconBg by mutableIntStateOf(prefs.iconBg)
+    var iconFg by mutableIntStateOf(prefs.iconFg)
+    var iconStyle by mutableIntStateOf(prefs.iconStyle)
 
     fun saveIconColors() {
-        prefs.iconBack = iconBack
-        prefs.iconFront = iconFront
-        prefs.iconKey = iconKey
+        prefs.iconBg = iconBg
+        prefs.iconFg = iconFg
+        prefs.iconStyle = iconStyle
     }
     val colors = mutableStateMapOf<FileType, Int>().also { m ->
         FileType.values().forEach { m[it] = prefs.typeColor(it) }
@@ -148,15 +157,15 @@ fun nightScheme(hue: Float) = darkColorScheme(
 )
 
 fun iconFor(t: FileType): ImageVector = when (t) {
-    FileType.FOLDER -> Icons.Outlined.Folder
-    FileType.IMAGE -> Icons.Outlined.Image
-    FileType.VIDEO -> Icons.Outlined.Movie
-    FileType.AUDIO -> Icons.Outlined.MusicNote
-    FileType.PDF -> Icons.Outlined.PictureAsPdf
-    FileType.DOC -> Icons.Outlined.Description
-    FileType.ARCHIVE -> Icons.Outlined.FolderZip
-    FileType.APK -> Icons.Outlined.Android
-    FileType.OTHER -> Icons.Outlined.InsertDriveFile
+    FileType.FOLDER -> OFolder
+    FileType.IMAGE -> OImage
+    FileType.VIDEO -> OMovie
+    FileType.AUDIO -> OMusicNote
+    FileType.PDF -> OPictureAsPdf
+    FileType.DOC -> ODescription
+    FileType.ARCHIVE -> OFolderZip
+    FileType.APK -> OAndroid
+    FileType.OTHER -> OInsertDriveFile
 }
 
 fun rowSub(f: File): String =

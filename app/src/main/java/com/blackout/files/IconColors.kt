@@ -99,23 +99,15 @@ fun ColorWheel(color: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifie
 fun IconColors(st: UiState) {
     val ctx = LocalContext.current
     var target by remember { mutableStateOf(0) }
-    val current = when (target) {
-        0 -> st.iconFront
-        1 -> st.iconBack
-        else -> st.iconKey
-    }
-    val preview = remember(st.iconFront, st.iconBack, st.iconKey) {
-        IconArt.render(256, st.iconBack, st.iconFront, st.iconKey, true).asImageBitmap()
+    val current = if (target == 0) st.iconBg else st.iconFg
+    val preview = remember(st.iconBg, st.iconFg, st.iconStyle) {
+        IconArt.render(256, st.iconStyle, st.iconBg, st.iconFg, true).asImageBitmap()
     }
     val hsv = FloatArray(3)
     AndroidColor.colorToHSV(current, hsv)
 
     fun apply(c: Int) {
-        when (target) {
-            0 -> st.iconFront = c
-            1 -> st.iconBack = c
-            else -> st.iconKey = c
-        }
+        if (target == 0) st.iconBg = c else st.iconFg = c
         st.saveIconColors()
     }
 
@@ -127,26 +119,32 @@ fun IconColors(st: UiState) {
         Image(bitmap = preview, contentDescription = "Icon preview", modifier = Modifier.size(84.dp))
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Front", "Back", "Keyhole").forEachIndexed { i, l ->
+            IconArt.STYLES.forEachIndexed { i, l ->
+                Pill(l, st.iconStyle == i) { st.iconStyle = i; st.saveIconColors() }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("Background", "Glyph").forEachIndexed { i, l ->
                 Pill(l, target == i) { target = i }
             }
         }
         Spacer(Modifier.height(12.dp))
         ColorWheel(current, { apply(it) }, Modifier.size(200.dp))
         Slider(
-            value = hsv[2].coerceAtLeast(0.15f),
+            value = hsv[2],
             onValueChange = { v -> apply(AndroidColor.HSVToColor(floatArrayOf(hsv[0], hsv[1], v))) },
-            valueRange = 0.15f..1f
+            valueRange = 0f..1f
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = {
-                st.iconFront = IconArt.DEF_FRONT
-                st.iconBack = IconArt.DEF_BACK
-                st.iconKey = IconArt.DEF_KEY
+                st.iconBg = IconArt.DEF_BG
+                st.iconFg = IconArt.DEF_FG
+                st.iconStyle = 0
                 st.saveIconColors()
             }) { Text("Reset") }
             Button(onClick = {
-                val ok = IconArt.pin(ctx, st.iconBack, st.iconFront, st.iconKey)
+                val ok = IconArt.pin(ctx, st.iconStyle, st.iconBg, st.iconFg)
                 Toast.makeText(
                     ctx,
                     if (ok) "Confirm the prompt to add it to your home screen"
