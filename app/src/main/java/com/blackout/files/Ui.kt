@@ -481,6 +481,7 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
 
     LazyColumn(Modifier.fillMaxSize()) {
         item { Header("Settings") }
+        item { CrashReport() }
 
         item { SectionLabel("Theme color") }
         item {

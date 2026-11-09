@@ -71,6 +71,7 @@ object FileOps {
 
     fun scan(): Map<FileType, Long> {
         val m = HashMap<FileType, Long>()
+        try {
         root.walkTopDown()
             .onEnter { d -> !(d.parentFile == root && d.name == "Android") }
             .forEach { f ->
@@ -79,6 +80,8 @@ object FileOps {
                     m[t] = (m[t] ?: 0L) + f.length()
                 }
             }
+        } catch (e: Exception) {
+        }
         return m
     }
 
