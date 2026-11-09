@@ -93,6 +93,15 @@ class UiState(val prefs: Prefs) {
     var favs by mutableStateOf(prefs.favorites())
     var clip by mutableStateOf<File?>(null)
     var clipMove by mutableStateOf(false)
+    var iconBack by mutableIntStateOf(prefs.iconBack)
+    var iconFront by mutableIntStateOf(prefs.iconFront)
+    var iconKey by mutableIntStateOf(prefs.iconKey)
+
+    fun saveIconColors() {
+        prefs.iconBack = iconBack
+        prefs.iconFront = iconFront
+        prefs.iconKey = iconKey
+    }
     val colors = mutableStateMapOf<FileType, Int>().also { m ->
         FileType.values().forEach { m[it] = prefs.typeColor(it) }
     }
@@ -697,6 +706,8 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
                 }
             }
         }
+
+        item { IconColors(st) }
 
         item { SectionLabel("File type icon colors") }
         items(FileType.values().toList()) { t ->

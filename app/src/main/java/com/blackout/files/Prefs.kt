@@ -21,6 +21,18 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("trash_days", 30)
         set(v) { sp.edit().putInt("trash_days", v).apply() }
 
+    var iconBack: Int
+        get() = sp.getInt("icon_back", IconArt.DEF_BACK)
+        set(v) { sp.edit().putInt("icon_back", v).apply() }
+
+    var iconFront: Int
+        get() = sp.getInt("icon_front", IconArt.DEF_FRONT)
+        set(v) { sp.edit().putInt("icon_front", v).apply() }
+
+    var iconKey: Int
+        get() = sp.getInt("icon_key", IconArt.DEF_KEY)
+        set(v) { sp.edit().putInt("icon_key", v).apply() }
+
     fun typeColor(t: FileType): Int = sp.getInt("c_" + t.name, t.defaultColor)
 
     fun setTypeColor(t: FileType, c: Int) {
