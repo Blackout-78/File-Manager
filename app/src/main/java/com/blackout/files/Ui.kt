@@ -90,6 +90,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +107,7 @@ class UiState(val prefs: Prefs) {
     var iconBg by mutableIntStateOf(prefs.iconBg)
     var iconFg by mutableIntStateOf(prefs.iconFg)
     var iconStyle by mutableIntStateOf(prefs.iconStyle)
+    var roundIcons by mutableStateOf(prefs.roundIcons)
 
     fun saveIconColors() {
         prefs.iconBg = iconBg
@@ -156,16 +158,39 @@ fun nightScheme(hue: Float) = darkColorScheme(
     onSecondaryContainer = Color(0xFFE8EAF0)
 )
 
-fun iconFor(t: FileType): ImageVector = when (t) {
-    FileType.FOLDER -> Icons.Outlined.OFolder
-    FileType.IMAGE -> Icons.Outlined.OImage
-    FileType.VIDEO -> Icons.Outlined.OMovie
-    FileType.AUDIO -> Icons.Outlined.OMusicNote
-    FileType.PDF -> Icons.Outlined.OPictureAsPdf
-    FileType.DOC -> Icons.Outlined.ODescription
-    FileType.ARCHIVE -> Icons.Outlined.OFolderZip
-    FileType.APK -> Icons.Outlined.OAndroid
-    FileType.OTHER -> Icons.Outlined.OInsertDriveFile
+fun iconFor(t: FileType, outlined: Boolean = false): ImageVector = when (t) {
+    FileType.FOLDER -> if (outlined) Icons.Outlined.OFolder else Icons.Filled.Folder
+    FileType.IMAGE -> if (outlined) Icons.Outlined.OImage else Icons.Filled.Image
+    FileType.VIDEO -> if (outlined) Icons.Outlined.OMovie else Icons.Filled.Movie
+    FileType.AUDIO -> if (outlined) Icons.Outlined.OMusicNote else Icons.Filled.MusicNote
+    FileType.PDF -> if (outlined) Icons.Outlined.OPictureAsPdf else Icons.Filled.PictureAsPdf
+    FileType.DOC -> if (outlined) Icons.Outlined.ODescription else Icons.Filled.Description
+    FileType.ARCHIVE -> if (outlined) Icons.Outlined.OFolderZip else Icons.Filled.FolderZip
+    FileType.APK -> if (outlined) Icons.Outlined.OAndroid else Icons.Filled.Android
+    FileType.OTHER -> if (outlined) Icons.Outlined.OInsertDriveFile else Icons.Filled.InsertDriveFile
+}
+
+/** File type icon in the chosen style: old tinted squares or round solid badges. */
+@Composable
+fun TypeIcon(st: UiState, t: FileType, box: Dp) {
+    val c = st.color(t)
+    if (st.roundIcons) {
+        Box(Modifier.size(box).clip(CircleShape).background(c), contentAlignment = Alignment.Center) {
+            Icon(
+                iconFor(t, true),
+                contentDescription = null,
+                tint = if (c.luminance() > 0.6f) Color(0xFF121214) else Color.White,
+                modifier = Modifier.size(box * 0.55f)
+            )
+        }
+    } else {
+        Box(
+            Modifier.size(box).clip(RoundedCornerShape(box / 4)).background(c.copy(alpha = 0.16f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(iconFor(t), contentDescription = null, tint = c, modifier = Modifier.size(box * 0.6f))
+        }
+    }
 }
 
 fun rowSub(f: File): String =
@@ -298,17 +323,7 @@ fun FileRow(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            Modifier.size(40.dp).clip(CircleShape).background(c),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                iconFor(t),
-                contentDescription = null,
-                tint = if (c.luminance() > 0.6f) Color(0xFF121214) else Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-        }
+        TypeIcon(st, t, 40.dp)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -509,6 +524,14 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
             )
         }
 
+        item { SectionLabel("File icon style") }
+        item {
+            Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Pill("Classic squares", !st.roundIcons) { st.roundIcons = false; st.prefs.roundIcons = false }
+                Pill("Round badges", st.roundIcons) { st.roundIcons = true; st.prefs.roundIcons = true }
+            }
+        }
+
         item { SectionLabel("App icon") }
         item {
             Row(
@@ -556,13 +579,7 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
         items(FileType.values().toList()) { t ->
             Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        Modifier.size(28.dp).clip(CircleShape)
-                            .background(st.color(t)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(iconFor(t), contentDescription = null, tint = if (st.color(t).luminance() > 0.6f) Color(0xFF121214) else Color.White, modifier = Modifier.size(16.dp))
-                    }
+                    TypeIcon(st, t, 28.dp)
                     Spacer(Modifier.width(10.dp))
                     Text(t.label)
                 }

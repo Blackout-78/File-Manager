@@ -29,6 +29,10 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("icon_fg2", IconArt.DEF_FG)
         set(v) { sp.edit().putInt("icon_fg2", v).apply() }
 
+    var roundIcons: Boolean
+        get() = sp.getBoolean("round_icons", false)
+        set(v) { sp.edit().putBoolean("round_icons", v).apply() }
+
     var iconStyle: Int
         get() = sp.getInt("icon_style", 0).coerceIn(0, IconArt.STYLES.size - 1)
         set(v) { sp.edit().putInt("icon_style", v).apply() }

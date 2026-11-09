@@ -12,7 +12,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 
 object IconArt {
-    val DEF_BG = 0xFF1C1C1F.toInt()
+    val DEF_BG = 0xFF121214.toInt()
     val DEF_FG = 0xFFFFFFFF.toInt()
 
     val STYLES = listOf("Classic", "Ring", "Solid")
@@ -20,6 +20,17 @@ object IconArt {
     private fun folder(): Path = Path().apply {
         moveTo(30f, 38f); lineTo(47f, 38f); lineTo(52f, 45f); lineTo(78f, 45f)
         lineTo(78f, 72f); lineTo(30f, 72f); close()
+    }
+
+    private fun backFolder(): Path = Path().apply {
+        moveTo(38f, 46f); lineTo(38f, 40f); quadTo(38f, 38f, 40f, 38f); lineTo(52f, 38f)
+        lineTo(57f, 43f); lineTo(77f, 43f); quadTo(80f, 43f, 80f, 46f); lineTo(80f, 70f); lineTo(72f, 70f)
+    }
+
+    private fun frontFolder(): Path = Path().apply {
+        moveTo(29f, 50f); quadTo(29f, 48f, 31f, 48f); lineTo(45f, 48f); lineTo(50f, 53f)
+        lineTo(66f, 53f); quadTo(70f, 53f, 70f, 57f); lineTo(70f, 78f); quadTo(70f, 80f, 68f, 80f)
+        lineTo(31f, 80f); quadTo(29f, 80f, 29f, 78f); close()
     }
 
     fun render(size: Int, style: Int, bg: Int, fg: Int, rounded: Boolean): Bitmap {
@@ -59,12 +70,11 @@ object IconArt {
             }
             else -> {
                 p.style = Paint.Style.STROKE
-                p.strokeWidth = 5f
-                c.drawPath(folder(), p)
-                p.strokeWidth = 4f
-                c.drawCircle(54f, 58.5f, 9f, p)
+                p.strokeWidth = 4.5f
+                p.strokeCap = Paint.Cap.ROUND
+                c.drawPath(backFolder(), p)
                 p.style = Paint.Style.FILL
-                c.drawCircle(54f, 58.5f, 3f, p)
+                c.drawPath(frontFolder(), p)
             }
         }
         return bmp

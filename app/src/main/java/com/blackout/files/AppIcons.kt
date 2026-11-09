@@ -14,9 +14,9 @@ data class IconOpt(
 
 object AppIcons {
     val options = listOf(
-        IconOpt("Classic", "com.blackout.files.IconVault", R.drawable.ic_foreground, 0xFF0B0D12.toInt(), true),
-        IconOpt("Ring", "com.blackout.files.IconNight", R.drawable.ic_foreground_night, 0xFF0B0D12.toInt(), false),
-        IconOpt("Solid", "com.blackout.files.IconOutline", R.drawable.ic_foreground_outline, 0xFF8B7CF6.toInt(), false)
+        IconOpt("Classic", "com.blackout.files.IconVault", R.drawable.ic_foreground, 0xFF121214.toInt(), true),
+        IconOpt("Ring", "com.blackout.files.IconNight", R.drawable.ic_foreground_night, 0xFFF2F2F2.toInt(), false),
+        IconOpt("Solid", "com.blackout.files.IconOutline", R.drawable.ic_foreground_outline, 0xFF1C1C1F.toInt(), false)
     )
 
     private fun cn(ctx: Context, alias: String) = ComponentName(ctx.packageName, alias)
