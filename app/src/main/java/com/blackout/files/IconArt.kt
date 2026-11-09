@@ -14,10 +14,10 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.IconCompat
 
 object IconArt {
-    val BG = 0xFF0B0D12.toInt()
-    val DEF_BACK = 0xFF5B4FD0.toInt()
-    val DEF_FRONT = 0xFF8B7CF6.toInt()
-    val DEF_KEY = 0xFFF5B93A.toInt()
+    val BG = 0xFF1C1C1F.toInt()
+    val DEF_BACK = 0xFFB8B8BE.toInt()
+    val DEF_FRONT = 0xFFFFFFFF.toInt()
+    val DEF_KEY = 0xFF1C1C1F.toInt()
 
     private fun backPath(): Path = Path().apply {
         moveTo(24f, 32f); lineTo(46f, 32f); lineTo(52f, 39f); lineTo(84f, 39f)

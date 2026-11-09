@@ -75,6 +75,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -147,15 +148,15 @@ fun nightScheme(hue: Float) = darkColorScheme(
 )
 
 fun iconFor(t: FileType): ImageVector = when (t) {
-    FileType.FOLDER -> Icons.Filled.Folder
-    FileType.IMAGE -> Icons.Filled.Image
-    FileType.VIDEO -> Icons.Filled.Movie
-    FileType.AUDIO -> Icons.Filled.MusicNote
-    FileType.PDF -> Icons.Filled.PictureAsPdf
-    FileType.DOC -> Icons.Filled.Description
-    FileType.ARCHIVE -> Icons.Filled.FolderZip
-    FileType.APK -> Icons.Filled.Android
-    FileType.OTHER -> Icons.Filled.InsertDriveFile
+    FileType.FOLDER -> Icons.Outlined.Folder
+    FileType.IMAGE -> Icons.Outlined.Image
+    FileType.VIDEO -> Icons.Outlined.Movie
+    FileType.AUDIO -> Icons.Outlined.MusicNote
+    FileType.PDF -> Icons.Outlined.PictureAsPdf
+    FileType.DOC -> Icons.Outlined.Description
+    FileType.ARCHIVE -> Icons.Outlined.FolderZip
+    FileType.APK -> Icons.Outlined.Android
+    FileType.OTHER -> Icons.Outlined.InsertDriveFile
 }
 
 fun rowSub(f: File): String =
@@ -289,10 +290,15 @@ fun FileRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(c.copy(alpha = 0.16f)),
+            Modifier.size(40.dp).clip(CircleShape).background(c),
             contentAlignment = Alignment.Center
         ) {
-            Icon(iconFor(t), contentDescription = null, tint = c)
+            Icon(
+                iconFor(t),
+                contentDescription = null,
+                tint = if (c.luminance() > 0.6f) Color(0xFF121214) else Color.White,
+                modifier = Modifier.size(22.dp)
+            )
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
@@ -542,11 +548,11 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        Modifier.size(28.dp).clip(RoundedCornerShape(8.dp))
-                            .background(st.color(t).copy(alpha = 0.16f)),
+                        Modifier.size(28.dp).clip(CircleShape)
+                            .background(st.color(t)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(iconFor(t), contentDescription = null, tint = st.color(t), modifier = Modifier.size(18.dp))
+                        Icon(iconFor(t), contentDescription = null, tint = if (st.color(t).luminance() > 0.6f) Color(0xFF121214) else Color.White, modifier = Modifier.size(16.dp))
                     }
                     Spacer(Modifier.width(10.dp))
                     Text(t.label)
