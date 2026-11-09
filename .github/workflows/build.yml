@@ -40,5 +40,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: v1.0.${{ github.run_number }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk "Files-$TAG.apk"
-          gh release create "$TAG" "Files-$TAG.apk" --title "Files $TAG" --notes "Signed release build."
+          cp app/build/outputs/apk/release/app-release.apk "File-Manager-$TAG.apk"
+          gh release create "$TAG" "File-Manager-$TAG.apk" --title "File Manager $TAG" --notes "Signed release build."

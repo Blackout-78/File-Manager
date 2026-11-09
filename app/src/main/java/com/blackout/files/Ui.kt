@@ -229,7 +229,7 @@ fun PermissionScreen(onAsk: () -> Unit) {
             modifier = Modifier.size(56.dp)
         )
         Spacer(Modifier.height(16.dp))
-        Text("Files needs access to your storage", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Text("File Manager needs access to your storage", fontSize = 18.sp, fontWeight = FontWeight.Medium)
         Spacer(Modifier.height(8.dp))
         Text(
             "It's the only way to browse and manage your files. Nothing leaves this phone.",
@@ -687,7 +687,7 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
 
         item {
             Text(
-                "Files works fully offline and collects no data. Everything stays on this phone.",
+                "File Manager works fully offline and collects no data. Everything stays on this phone.",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)

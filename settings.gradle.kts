@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Files"
+rootProject.name = "File-Manager"
 include(":app")
