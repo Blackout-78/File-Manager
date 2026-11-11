@@ -24,7 +24,8 @@ android {
             if (keystorePath != null) {
                 storeFile = file(keystorePath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")?.trim()?.takeIf { it.isNotEmpty() } ?: "communications"
+                keyAlias = System.getenv("KEY_ALIAS")?.trim()?.takeIf { it.isNotEmpty() }
+                    ?: error("KEY_ALIAS is not set")
                 keyPassword = System.getenv("KEYSTORE_PASSWORD")
             }
         }
@@ -33,10 +34,11 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            // Never fall back to the debug key: a release must be signed with the real key.
             signingConfig = if (keystorePath != null) {
                 signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                null
             }
         }
     }
