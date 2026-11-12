@@ -224,6 +224,11 @@ fun FilesApp(
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
+                Column(Modifier.background(Color(0xFF0E1118))) {
+                Text(
+                    com.blackout.files.Version.tag, color = muted, fontSize = 10.sp,
+                    modifier = Modifier.padding(start = 12.dp, top = 2.dp).clickable { tab = 3; trashOpen = false },
+                )
                 NavigationBar(containerColor = Color(0xFF0E1118)) {
                     val tabs = listOf(
                         "Browse" to Icons.Filled.Folder,
@@ -246,6 +251,7 @@ fun FilesApp(
                             )
                         )
                     }
+                }
                 }
             }
         ) { pad ->
@@ -648,6 +654,15 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            Text(
+                com.blackout.files.Version.full,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             )
         }
     }
