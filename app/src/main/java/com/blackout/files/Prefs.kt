@@ -10,7 +10,7 @@ class Prefs(ctx: Context) {
     private val sp = ctx.getSharedPreferences("files_prefs", Context.MODE_PRIVATE)
 
     var accentHue: Float
-        get() = sp.getFloat("hue", 255f)
+        get() = sp.getFloat("hue", 234f)
         set(v) { sp.edit().putFloat("hue", v).apply() }
 
     var showHidden: Boolean

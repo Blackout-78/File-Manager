@@ -146,15 +146,15 @@ class UiState(val prefs: Prefs) {
 
 fun nightScheme(hue: Float) = darkColorScheme(
     primary = Color.hsv(hue, 0.55f, 0.97f),
-    onPrimary = Color(0xFF0B0D12),
-    background = Color(0xFF0B0D12),
+    onPrimary = Color(0xFF000000),
+    background = Color(0xFF000000),
     onBackground = Color(0xFFE8EAF0),
-    surface = Color(0xFF0E1118),
+    surface = Color(0xFF111111),
     onSurface = Color(0xFFE8EAF0),
-    surfaceVariant = Color(0xFF141824),
+    surfaceVariant = Color(0xFF1C1C1C),
     onSurfaceVariant = Color(0xFF9AA0B2),
-    outlineVariant = Color(0xFF1C2030),
-    secondaryContainer = Color.hsv(hue, 0.45f, 0.35f),
+    outlineVariant = Color(0xFF3A3A3A),
+    secondaryContainer = Color.hsv(hue, 0.62f, 0.37f),
     onSecondaryContainer = Color(0xFFE8EAF0)
 )
 
@@ -224,12 +224,12 @@ fun FilesApp(
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
-                Column(Modifier.background(Color(0xFF0E1118))) {
+                Column(Modifier.background(Color(0xFF111111))) {
                 Text(
                     com.blackout.files.Version.tag, color = muted, fontSize = 10.sp,
                     modifier = Modifier.padding(start = 12.dp, top = 2.dp).clickable { tab = 3; trashOpen = false },
                 )
-                NavigationBar(containerColor = Color(0xFF0E1118)) {
+                NavigationBar(containerColor = Color(0xFF111111)) {
                     val tabs = listOf(
                         "Browse" to Icons.Filled.Folder,
                         "Recent" to Icons.Filled.Schedule,
@@ -396,7 +396,7 @@ fun StorageCard(st: UiState, total: Long, free: Long, cats: Map<FileType, Long>)
                 .fillMaxWidth()
                 .height(8.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFF2A3042))
+                .background(Color(0xFF3A3A3A))
         ) {
             FileType.values().forEach { t ->
                 val s = cats[t] ?: 0L
