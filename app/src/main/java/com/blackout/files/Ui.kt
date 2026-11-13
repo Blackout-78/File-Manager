@@ -658,6 +658,14 @@ fun SettingsScreen(st: UiState, openTrash: () -> Unit) {
         }
 
         item {
+            val ctx = androidx.compose.ui.platform.LocalContext.current
+            androidx.compose.material3.OutlinedButton(
+                onClick = { com.blackout.files.Version.openReleases(ctx) },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) { Text("Open GitHub Releases") }
+        }
+
+        item {
             Text(
                 com.blackout.files.Version.full,
                 fontSize = 12.sp,
