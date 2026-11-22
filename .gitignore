@@ -12,3 +12,5 @@ github-secrets*.txt
 *.pem
 keystore.properties
 .env
+*.pfx
+*.key

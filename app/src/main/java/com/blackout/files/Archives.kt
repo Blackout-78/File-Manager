@@ -15,6 +15,24 @@ object Archives {
     fun isArchive(f: File): Boolean =
         f.isFile && (f.extension.lowercase() == "zip" || f.extension.lowercase() == "7z")
 
+    // Zip-bomb guard: stop after this many entries, or when the output would not fit in free space.
+    private const val MAX_ENTRIES = 100_000
+
+    private class Budget(dest: File) {
+        var entries = 0
+        var remaining: Long = run {
+            dest.mkdirs()
+            dest.usableSpace
+        }
+        fun entry() {
+            if (++entries > MAX_ENTRIES) throw java.io.IOException("Archive has too many files (over $MAX_ENTRIES)")
+        }
+        fun bytes(n: Int) {
+            remaining -= n
+            if (remaining < 0) throw java.io.IOException("Not enough free space to extract this archive")
+        }
+    }
+
     private fun safeChild(dest: File, name: String): File {
         val f = File(dest, name)
         val base = dest.canonicalPath + File.separator
@@ -68,26 +86,11 @@ object Archives {
     }
 
     private fun extractZip(src: File, destDir: File) {
+        val budget = Budget(destDir)
         ZipInputStream(BufferedInputStream(FileInputStream(src))).use { z ->
             var e = z.nextEntry
             while (e != null) {
-                val out = safeChild(destDir, e.name)
-                if (e.isDirectory) {
-                    out.mkdirs()
-                } else {
-                    out.parentFile?.mkdirs()
-                    FileOutputStream(out).use { z.copyTo(it) }
-                }
-                z.closeEntry()
-                e = z.nextEntry
-            }
-        }
-    }
-
-    private fun extract7z(src: File, destDir: File) {
-        SevenZFile(src).use { z ->
-            var e = z.nextEntry
-            while (e != null) {
+                budget.entry()
                 val out = safeChild(destDir, e.name)
                 if (e.isDirectory) {
                     out.mkdirs()
@@ -97,6 +100,34 @@ object Archives {
                         val buf = ByteArray(65536)
                         var n = z.read(buf)
                         while (n > 0) {
+                            budget.bytes(n)
+                            os.write(buf, 0, n)
+                            n = z.read(buf)
+                        }
+                    }
+                }
+                z.closeEntry()
+                e = z.nextEntry
+            }
+        }
+    }
+
+    private fun extract7z(src: File, destDir: File) {
+        val budget = Budget(destDir)
+        SevenZFile(src).use { z ->
+            var e = z.nextEntry
+            while (e != null) {
+                budget.entry()
+                val out = safeChild(destDir, e.name)
+                if (e.isDirectory) {
+                    out.mkdirs()
+                } else {
+                    out.parentFile?.mkdirs()
+                    FileOutputStream(out).use { os ->
+                        val buf = ByteArray(65536)
+                        var n = z.read(buf)
+                        while (n > 0) {
+                            budget.bytes(n)
                             os.write(buf, 0, n)
                             n = z.read(buf)
                         }
